@@ -3,8 +3,12 @@
 import java.io.*;
 import java.io.IOException;
 import java.net.*;
+import java.util.Properties;
 import java.util.Scanner;
 //import java.util.Calendar;
+
+
+// how to parse string to int?
 
 public class WordleClientMain {
     
@@ -16,13 +20,20 @@ public class WordleClientMain {
     private static Scanner stdin=new Scanner(System.in);
     private static String USERNAME;
     private static String PASSWORD;
-
+    private static int SOCKET_PORT;
     public WordleClientMain(){
 
         ps("------ CLIENT SIDE ------");
         try {
+            
+            Properties props = new Properties();
+            InputStream in = new FileInputStream("config.properties");
+            props.load(in);
+            //in.close();
+            SOCKET_PORT=Integer.parseInt(props.getProperty("port"));
 
-            SOCKET=new Socket("localhost", 10501);
+            
+            SOCKET=new Socket("localhost", SOCKET_PORT);
             // >>>> connected to socket >>> inizio a leggere
             //dataIn=new DataInputStream((socket.getInputStream()));
             //dataOut=new DataOutputStream((socket.getOutputStream()));
