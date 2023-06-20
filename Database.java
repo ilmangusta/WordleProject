@@ -12,13 +12,14 @@ import com.google.gson.stream.JsonReader;
 
 public class Database {
 
-    public String FILE_NAME="./DBGiocatoriRegistrati.json";
-    public ArrayList<Giocatore> STATS_GIOCATORI = new ArrayList<Giocatore>();
-    public ConcurrentHashMap<String,String> UTENTI_REGISTRATI=new ConcurrentHashMap<String,String>();
-    public ConcurrentHashMap<String,ArrayList<String>> PAROLE_GIOCATE=new ConcurrentHashMap<String,ArrayList<String>>();
+    public String FILE_NAME_DB; //nome del file json contenente le informazioni dei giocatori
+    public ArrayList<Giocatore> STATS_GIOCATORI = new ArrayList<Giocatore>(); // una lista di giocatori per le statistiche
+    public ConcurrentHashMap<String,String> UTENTI_REGISTRATI=new ConcurrentHashMap<String,String>(); // una hashmap coppie username - password per il login
+    public ConcurrentHashMap<String,ArrayList<String>> PAROLE_GIOCATE=new ConcurrentHashMap<String,ArrayList<String>>(); // una hashmap coppie giocatore - tutte le parole giocate
 
-    Database(){
+    Database(String file_name){
 
+        FILE_NAME_DB=file_name;
         String user="";
         String password="";
         int partiteGiocate=0;
@@ -29,7 +30,7 @@ public class Database {
         int maxStreakVincite=0;
         int guessDistribution=0; 
     
-        File input = new File(FILE_NAME);
+        File input = new File(FILE_NAME_DB);
         try {
 
             JsonReader reader = new JsonReader(new FileReader(input));
@@ -85,7 +86,7 @@ public class Database {
         }catch (Exception e) {
             ps("Exception error [86]: "+e.getMessage());
         }  
-        ps("DATABASE CREATO CORRETTAMENTE\nGIOCATORI REGISTRATI:\n"+UTENTI_REGISTRATI);
+        ps("DATABASE CREATO CORRETTAMENTE...GIOCATORI REGISTRATI:\n"+UTENTI_REGISTRATI);
     }
 
     public static void ps(String s){

@@ -10,13 +10,15 @@
     "propellant",
     "antonymous",
     "intentness",
-    "legendrian"
+    "legendrian",
+    "resanction",
+    "dedecorate"
   ],
-  "partiteGiocate": 9,
-  "partiteVinte": 6,
-  "percentualeVinte": 66.0,
-  "streakVincite": 2,
-  "maxStreakVincite": 2,
+  "partiteGiocate": 11,
+  "partiteVinte": 8,
+  "percentualeVinte": 72.0,
+  "streakVincite": 4,
+  "maxStreakVincite": 4,
   "guessDistribution": 0
 },
 {

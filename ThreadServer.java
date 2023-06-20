@@ -3,6 +3,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,21 +13,21 @@ import com.google.gson.GsonBuilder;
 public class ThreadServer implements Runnable {
 
     //private boolean aggiornaparola=false;
-    private Scanner dataIn;
-    private PrintWriter dataOut;
-    private String LINE="";
-    private String USERNAME;
+    private Scanner dataIn; //scanner per input
+    private PrintWriter dataOut; //canale per output
+    private String LINE=""; //"buffer" per comunicazione
+    private String USERNAME; 
     private String PASSWORD;
     private String SECRET_WORD;
-    private String FILE_NAME="./words.txt";
-    private ArrayList<Giocatore> DB_STATS_GIOCATORI;
-    private ConcurrentHashMap<String,String> DB_UTENTI_REGISTRATI;
-    private List<String> DB_UTENTI_CONNESSI;
-    private ConcurrentHashMap<String,ArrayList<String>> DB_PAROLE_GIOCATE;
-    private Socket SOCKET;
-    private int PLAYER_ID;
+    private String FILE_NAME_WORDS; 
+    private ArrayList<Giocatore> DB_STATS_GIOCATORI; //una lista di giocatori, utilizzata per l'aggiornamento delle statistiche dei giocatori
+    private ConcurrentHashMap<String,String> DB_UTENTI_REGISTRATI; // una hashmap concorrente per ricordare chi è registrato nel sistema coppia valori username - password
+    private List<String> DB_UTENTI_CONNESSI;  // una lista sincronizzata per ricordare chi è connesso
+    private ConcurrentHashMap<String,ArrayList<String>> DB_PAROLE_GIOCATE;  // una hashmap con coppia Giocatore - Tutte le parole giocate
+    private Socket SOCKET; //socket che sarà utilizzato per la conunicazione
+    private int PLAYER_ID; //id per ricordare il giocatore
 
-    public ThreadServer(Socket s, int id,ArrayList<Giocatore> dbGiocatori,ConcurrentHashMap<String,ArrayList<String>> dbParole, ConcurrentHashMap<String,String> dbUtentiRegistrati, List<String> DBConnessi, String str){
+    public ThreadServer(Socket s, int id,ArrayList<Giocatore> dbGiocatori,ConcurrentHashMap<String,ArrayList<String>> dbParole, ConcurrentHashMap<String,String> dbUtentiRegistrati, List<String> DBConnessi, String str, String file_name){
         SOCKET=s;
         PLAYER_ID=id;
         DB_STATS_GIOCATORI=dbGiocatori;
@@ -34,6 +35,13 @@ public class ThreadServer implements Runnable {
         DB_UTENTI_REGISTRATI=dbUtentiRegistrati;
         DB_UTENTI_CONNESSI=DBConnessi;
         SECRET_WORD=str;
+        FILE_NAME_WORDS=file_name;
+        this.createCommunication();
+    }
+
+    // inizializzo canali per la comunicazione
+    public void createCommunication(){
+
         try{
             //dataIn=new DataInputStream((socket.getInputStream()));
             //dataOut=new DataOutputStream((socket.getOutputStream()));
@@ -46,52 +54,72 @@ public class ThreadServer implements Runnable {
         }
     }
 
-    @Override
+    // utilizzato per chiudere i canali di comunicazione
+    public void closeCommunication(){
+        dataIn.close();
+        dataOut.close();
+    }
+
+
+    //metodo per evitare di fare ctrl c sul server per spegnerlo
+    public void closeServer(){
+        try {
+            SOCKET.close();
+        }catch (Exception e){ps("Error closing server: "+e.getMessage());}
+        ps("Closed server...");
+    }
+
     public void run(){ 
-        //thread run partono con id diversi ognuno indipendente connesso col proprio client
+
+        //thread run partono con id diversi ognuno indipendente connesso col proprio id client (Giocatore)
+        int n=0;
         try {
             dataOut.println(PLAYER_ID);
-            int n=0;
             while(dataIn.hasNextLine()){ 
                 //ciclo infinito per mandare messaggi al client e ricevere messaggi
                 //ps("Turno del giocatore: "+PLAYER_ID);
                 //line=dataIn.readLine(); DEPRECATO
                 LINE=dataIn.nextLine();
+                //ps("line: "+LINE);
                 if(LINE.contentEquals("Registra") ||LINE.contentEquals("Accedi")){
                     USERNAME=dataIn.nextLine();
                     PASSWORD=dataIn.nextLine();
                     if(LINE.contentEquals("Registra")){
-                        n=this.registra(USERNAME,PASSWORD);
+                        n=this.register(USERNAME,PASSWORD);
                         dataOut.println(n);
                     }else if(LINE.contentEquals("Accedi")){
-                        n=this.accedi(USERNAME,PASSWORD);
+                        n=this.login(USERNAME,PASSWORD);
                         dataOut.println(n);
                     }
                 }else if(LINE.contentEquals("gioca")){
-                    boolean giaGiocato=this.controllaGiocatore(USERNAME);
+                    boolean giaGiocato=this.checkPlayer(USERNAME);
                     if(giaGiocato){
                         dataOut.println(2);
                     }else{
                         dataOut.println(1);
                     }
                 }else if(LINE.contentEquals("NonIndovinata")){
-                    this.aggiornaStatistiche(USERNAME,false);
+                    this.updateStats(USERNAME,false);
                 }else if(LINE.contentEquals("Indovinata")){
-                    this.aggiornaStatistiche(USERNAME,true);
+                    this.updateStats(USERNAME,true);
                 }else if(LINE.contentEquals("mostraGiocatoriConnessi")){
                     this.mostraGiocatoriConnessi();
-                }else if(LINE.contentEquals("mostraStatistiche")){
-                    this.mostraStatistiche(USERNAME);
-                }else if(LINE.contentEquals("condividiStatistiche")){
-                    this.condividiStatistiche(USERNAME);
-                }else if(LINE.contentEquals("mostraStatisticheGiocatori")){
-                    this.mostraStatistiche("Giocatori");
+                }else if(LINE.contentEquals("showStats")){
+                    this.showStats(USERNAME);
+                }else if(LINE.contentEquals("shareStats")){
+                    this.shareStats(USERNAME);
+                }else if(LINE.contentEquals("showStatsGiocatori")){
+                    this.showStats("Giocatori");
                 }else if(LINE.contentEquals("esci")){
                     this.logout(USERNAME);
                     return;
+                }else if(LINE.contentEquals("closeserver")){
+                    this.logout(USERNAME);
+                    this.closeServer();
+                    return;
                 }else{
                     ps("Parola scelta dal giocatore: "+LINE);
-                    this.controllaParola(LINE);
+                    this.checkWord(LINE);
                 }
             }
         } catch (Exception e) {
@@ -102,7 +130,7 @@ public class ThreadServer implements Runnable {
     }
 
     //servizio registrazione utente al gioco 
-    public int registra(String username, String password) throws IOException{
+    public int register(String username, String password) throws IOException{
         if(DB_UTENTI_REGISTRATI.containsKey(username)){
             ps("GIOCATORE GIA' REGISTRATO!");
             return -1;
@@ -114,14 +142,14 @@ public class ThreadServer implements Runnable {
             DB_STATS_GIOCATORI.add(new Giocatore(username,password,new ArrayList<String>(),0,0,0,0,0,0));
             DB_UTENTI_REGISTRATI.put(username,password);
             DB_PAROLE_GIOCATE.put(username,new ArrayList<String>());
-            this.aggiornaJson();
+            this.updateJson();
             ps("GIOCATORE REGISTRATO CON SUCCESSO! LISTA GIOCATORI REGISTRATI:\n"+DB_UTENTI_REGISTRATI);
             return 1;
         }
     }
 
     //servizio di login giocatore al gioco 
-    public int accedi(String username, String password){
+    public int login(String username, String password){
         if(!DB_UTENTI_REGISTRATI.containsKey(username)){
             ps("GIOCATORE NON REGISTRATO");
             return -1;
@@ -133,7 +161,6 @@ public class ThreadServer implements Runnable {
             return -3;
         }
         DB_UTENTI_CONNESSI.add(username);
-        //DBUtentiConnessi.put(username, 1);
         ps("GIOCATORE ESEGUITO ACCESSO CON SUCCESSO. LISTA GIOCATORI PRESENTI IN SESSIONE:\n"+DB_UTENTI_CONNESSI);
         return 1;
     }
@@ -147,15 +174,16 @@ public class ThreadServer implements Runnable {
         }else{
             ps("GIOCATORE NON PRESENTE IN SESSIONE!");
         }
+        closeCommunication();
     }
 
-    //metodo di debugg per controllare lato server i giocatori connessi in un preciso istante
+    //metodo di debug per controllare lato server i giocatori connessi in un preciso istante
     public void mostraGiocatoriConnessi(){
         ps("LISTA GIOCATORI PRESENTI IN SESSIONE:\n"+DB_UTENTI_CONNESSI);
     }
 
     //scegli la parola giornaliera
-    public String scegliParola(String input) throws IOException{
+    public String selectWord(String input) throws IOException{
         File file = new File( input);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             int fileElement=((int) file.length()) / 11;
@@ -207,7 +235,7 @@ public class ThreadServer implements Runnable {
     }
 
     //metodo per aggiornare le statistiche del giocatore
-    public void aggiornaStatistiche(String username, boolean indovinata){
+    public void updateStats(String username, boolean indovinata){
         ArrayList<String> words;
         for(Giocatore  g: DB_STATS_GIOCATORI){
             if(g.username.contentEquals(username)){
@@ -226,11 +254,11 @@ public class ThreadServer implements Runnable {
             }
         }
         ps("AGGIORNA STATISTICHE DB PAROLE GIOCATE:\n"+DB_PAROLE_GIOCATE);
-        this.aggiornaJson();
+        this.updateJson();
     }
 
     //metodo per aggiornare il json quando modifichiamo le statistiche
-    public void aggiornaJson(){
+    public void updateJson(){
         Gson gson = new GsonBuilder().setPrettyPrinting().create(); // pretty print JSON
         int i=DB_STATS_GIOCATORI.size();
 
@@ -253,7 +281,7 @@ public class ThreadServer implements Runnable {
     }
 
     //metodo per mostrare le statistiche sia del giocatore che in alternativa di tutti i giocatori 
-    public void mostraStatistiche(String str){
+    public void showStats(String str){
         String res="";
         if(str.contentEquals("Giocatori")){
             for (Giocatore g: DB_STATS_GIOCATORI) {
@@ -287,7 +315,7 @@ public class ThreadServer implements Runnable {
     }
 
     //metodo per condividere i risultati/statistiche di un giocatore tra gli altri utenti
-    public void condividiStatistiche(String username){
+    public void shareStats(String username){
         //da implementare
         ps("METODO DA IMPLEMENTARE");
     }
@@ -302,7 +330,7 @@ public class ThreadServer implements Runnable {
     }
 
     //metodo per controllare se il giocatore ha gia partecipato alla sessione della secret word attuale
-    public boolean controllaGiocatore(String username){
+    public boolean checkPlayer(String username){
         boolean giagiocato=false;
         for(String s: DB_PAROLE_GIOCATE.get(username)){
             if(s.contentEquals(SECRET_WORD)){
@@ -316,11 +344,11 @@ public class ThreadServer implements Runnable {
     }
 
     //metodo per controllare e confrontare la Guessed Word con la Secret Word
-    public void controllaParola(String word) throws IOException{
+    public void checkWord(String word) throws IOException{
 
         int res=0;
         try {
-            res=this.ricercaBinaria(word);
+            res=this.BinarySearch(word);
         } catch (IOException e) {
             ps("Error IO Binary search: "+e.getMessage());
         }
@@ -330,7 +358,6 @@ public class ThreadServer implements Runnable {
             dataOut.println(-1);
             return;
         }
-        int lettereIndovinate=0;
         int lettereTrovate=0;
         String res2="";
         
@@ -340,7 +367,6 @@ public class ThreadServer implements Runnable {
         for(int i=0; i<10; i++){
             if(word.charAt(i)==SECRET_WORD.charAt(i)){
                 res2+="[V]";
-                lettereIndovinate++;
                 lettereTrovate++;
             }else if(SECRET_WORD.indexOf(word.charAt(i))!=-1){
                 res2+="[?]";
@@ -355,14 +381,15 @@ public class ThreadServer implements Runnable {
     }
 
 
-    //metodo per cercare se la parola inserita dal giocatore è presente nel vocabolario, si sfrutta una ricerca binaria per avere complessita bassa
-    public int ricercaBinaria(String word) throws IOException {
-
+    //metodo per cercare se la parola inserita dal giocatore è presente nel vocabolario, si sfrutta una ricerca binaria per avere complessita bassa (nlogn)
+    public int BinarySearch(String word) throws IOException {
+        //utilizzo della ricerca binaria, si divide sempre in due lo spazio di ricerca e si va a dx o sx in base al confronto della parola con il risultato
+        //implementata utilizzando un metodo iterativo e non ricorsivo
         RandomAccessFile file=null;
         int res=-1;
         long left=0, right=0, mid;
         try {
-            file = new RandomAccessFile(FILE_NAME, "r");
+            file = new RandomAccessFile(FILE_NAME_WORDS, "r");
             right = (file.length()/12);
         } catch (IOException e) {
             ps("Error IO: "+e.getMessage());
@@ -389,7 +416,7 @@ public class ThreadServer implements Runnable {
 	}
 
     //metodo per registrare un utente e per inserirlo nel file json persistente nel server e anche nelle strutture dati hashmap
-    public int inserisciGiocatore(String username, String psd,ArrayList<String> array,int p1, int p2, int p3, int p4, int p5, int p6){
+    public int insertPlayer(String username, String psd,ArrayList<String> array,int p1, int p2, int p3, int p4, int p5, int p6){
         Gson gson = new GsonBuilder().setPrettyPrinting().create(); // pretty print JSON
 
         Giocatore giocatore=new Giocatore(username, psd, array,p1,p2,p3,p4,p5,p6);
