@@ -50,7 +50,7 @@ public class WordleServerMain{
     private static ConcurrentHashMap<String,ArrayList<String>> PAROLE_GIOCATE; // una hashmap con coppia Giocatore - Tutte le parole giocate
     private static List<String> UTENTI_CONNESSI = Collections.synchronizedList(new ArrayList<String>()); // una lista sincronizzata per ricordare chi è connesso
     //utilizzo un cached thread pool personalizzato con un tempo di keepalive di 5 minuti, dopo di che il thread viene terminato
-    private ExecutorService cachedPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(Integer.MAX_VALUE));      
+    private ExecutorService cachedPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new SynchronousQueue<Runnable>());      
     //private ExecutorService cachedPoolDefault = Executors.newCachedThreadPool();
 
 
