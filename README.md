@@ -263,13 +263,13 @@ Ho implementato i seguenti metodi:
 ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.025.png) Main():
 
 - ReadConfig(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.026.png) già descritto nel WordleServerMain. Vengono lette le informazioni necessarie che vengono utilizzate come parametri per le funzioni. 
-  - CreateCommunication(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.027.png) già descritto nel ThreadServer
-    - CloseCommunication(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.028.png) già descritto nel ThreadServer
+- CreateCommunication(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.027.png) già descritto nel ThreadServer
+- CloseCommunication(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.028.png) già descritto nel ThreadServer
 - SetupMultiCast(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.029.png) già descritto nel WordleServerMain ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.030.png) piccola differenza qui nel processo client, per poter attendere in maniera passiva i messaggi senza essere bloccati bisogna attivare un thread che si occupi in maniera indipendente dal processo client della ricezione dei messaggi
-  - creo quindi la classe ThreadMultiCast con i dovuti parametri e faccio partire il task del thread con la chiamata start().
-  - CloseMultiCast()
+- creo quindi la classe ThreadMultiCast con i dovuti parametri e faccio partire il task del thread con la chiamata start().
+- CloseMultiCast()
     - già descritto nel WordleServerMain
-  - StartClient():
+- StartClient():
     - metodo che viene invocato dal processo main. Da qui inizia la vera e propria sessione di gioco dell'utente in cui può interagire tramite richieste col server ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.031.png) un loop infinito in cui il giocatore rimane finché non esegue l'accesso in maniera corretta. Le opzioni sono registrare un nuovo utente, accedere con le credenziali conosciute o terminare la sessione del client terminando il processo. Con terminazione controllata viene chiuso il gruppo multicast (se effettuato login), la connessione e il processo termina regolarmente ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.032.png) se l'accesso viene eseguito con successo viene instaurata la connessione col gruppo social multicast chiamando il metodo SetupMultiCast() e inizia la vera sessione di gioco col menu principale. Importante notare che se eseguo con successo l’accesso la coda dei suggerimenti viene svuotata perché potrei aver effettuato l’accesso con un altro account e vedere comunque gli stessi suggerimenti.
   - Register(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.033.png) vengono chiesti all'utente username e password, vengono mandati al server insieme ad una richiesta di registrazione. Il server elabora la richiesta, controlla username e password e risponde con un codice ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.034.png) il client traduce codice e riferisce all'utente se è andata a buon fine o ci sono stati errori 
     - Login(): ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.035.png) come register(), vengono chiesti all'utente username e password, vengono mandati al server insieme ad una richiesta di registrazione. Il server elabora la richiesta, controlla username e password e risponde con un codice ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.036.png) il client traduce codice e riferisce all'utente se è andata a buon fine o ci sono stati errori 
