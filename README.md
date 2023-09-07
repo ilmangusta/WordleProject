@@ -153,12 +153,12 @@ Sempre dentro la cartella WORDLE_PROJECT si ha la possibilità di eseguire dei c
 alternativi ai classici grazie all'utilizzo del Makefile:
 COMANDI CON MAKEFILE:
 ```
-make_ : esegue i due comandi per la compilazione del client e server;
-make class_ : rimuove tutti gli eseguibili .class nella cartella Src del progetto;
-make c_ : comando per eseguire il client;
-make s_ : comando per eseguire il server;
-make c-jar_ : comando per eseguire client con file .jar;
-make s-jar_ : comando per eseguire server con file .jar;
+make: esegue i due comandi per la compilazione del client e server;
+make class: rimuove tutti gli eseguibili .class nella cartella Src del progetto;
+make c: comando per eseguire il client;
+make s: comando per eseguire il server;
+make c-jar: comando per eseguire client con file .jar;
+make s-jar: comando per eseguire server con file .jar;
 ```
 
 
