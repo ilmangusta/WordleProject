@@ -11,22 +11,21 @@ Laboratorio di reti e calcolatori, Anno Accademico: 2022/2023 I Semestre
 **INDICE:**
 
 1. INTRODUZIONE AL GIOCO
-1. SCHEMA GENERALE CLASSI
-   1. PROCESSI 
-1. STRUTTURE DATI UTILIZZATE
-1. COMPILAZIONE ESECUZIONE E MANUALE D'USO
-   1. COMPILAZIONE ED ESECUZIONE
-   1. MANUALE D'USO
-1. FUNZIONALITA' DI BASE
-
-5\.1 Protocollo comunicazione
-
-1. WordleServerMain
-1. ThreadServer
-1. WordleClientMain
-1. Database
-1. ThreadMultiCast
-1. Giocatore
+2. SCHEMA GENERALE CLASSI
+   2.1 PROCESSI 
+3. STRUTTURE DATI UTILIZZATE
+4. COMPILAZIONE ESECUZIONE E MANUALE D'USO
+   4.1. COMPILAZIONE ED ESECUZIONE
+   4.2. MANUALE D'USO
+5. FUNZIONALITA' DI BASE
+   5.1 Protocollo comunicazione
+   5.2 WordleServerMain
+   5.3 ThreadServer
+   5.4 WordleClientMain
+   5.5 Database
+   5.6 ThreadMultiCast
+   5.7 Giocatore
+   
 1. **INTRODUZIONE:**
 
 Il progetto consiste nell'implementazione del gioco Wordle, un gioco web-based che consente ai giocatori di provare ad indovinare una parola giornaliera di 5 lettere in 6 tentativi utili ricevendo feedback sui tentativi effettuati, ma con alcune modifiche che rendono l'esperienza di gioco ancora più longeva. Il gioco offre inoltre un aspetto social in quanto permette di condividere i propri suggerimenti dell'ultimo round giocato su una piattaforma e di riceverli  su richiesta in qualsiasi momento da altri giocatori connessi. Tra le modifiche troviamo: 12 tentativi utili anziché i classici 6, parole di lunghezza 10 lettere e non 5, il timer di selezione della parola non giornaliero come nella versione originale ma a libera scelta del programmatore. 
