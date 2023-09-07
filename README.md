@@ -1,13 +1,5 @@
 ﻿**RELAZIONE PROGETTO LABORATORIO DI RETI A.A. 2022/23** 
 
-Progetto Laboratorio di reti: Wordle ![](Aspose.Words.9eba81ff-c9c6-4ca2-bea3-6dc82fb6605e.001.png)
-
-Studente: Luca Borrello 
-
-Matricola 579438 
-
-Laboratorio di reti e calcolatori, Anno Accademico: 2022/2023 I Semestre
-
 **INDICE:**
 
 1. INTRODUZIONE AL GIOCO
