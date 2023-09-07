@@ -1,0 +1,51 @@
+[{"gameId" :4},{
+  "username": "admin",
+  "password": "admin",
+  "paroleGiocate": [],
+  "partiteGiocate": 0,
+  "partiteVinte": 0,
+  "percentualeVinte": 0.0,
+  "streakVincite": 0,
+  "maxStreakVincite": 0,
+  "guessDistribution": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "ultimoIdGiocato": 0
+},
+{
+  "username": "player",
+  "password": "player",
+  "paroleGiocate": [],
+  "partiteGiocate": 0,
+  "partiteVinte": 0,
+  "percentualeVinte": 0.0,
+  "streakVincite": 0,
+  "maxStreakVincite": 0,
+  "guessDistribution": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "ultimoIdGiocato": 0
+}
+]
